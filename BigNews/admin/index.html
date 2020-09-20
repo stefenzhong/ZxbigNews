@@ -13,6 +13,8 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 导入bootstrap的js文件 -->
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <!--网络层-->
+    <script src="./libs/internter.js"></script>
 </head>
 
 <body>
@@ -25,7 +27,7 @@
         </div>
         <!-- 左侧导航栏 -->
         <div class="menu">
-            <div class="level01 active"><a href="./index.html" target="main_frame">
+            <div class="level01 active"><a href="./main_count.html" target="myframe">
                 <i class="iconfont icon-yidiandiantubiao04"></i> <span>首页</span></a></div>
             <div class="level01" id="attackBox"><a href="#"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
@@ -44,7 +46,7 @@
         <!-- 顶部栏 -->
         <div class="header_bar">
             <div class="user_center_link">
-                <a href="./user.html" target="myframe">个人中心</a>
+                <a href="./user.html" target="myframe" class="userCenter">个人中心</a>
                 <img src="images/2.jpg" alt="person">
                 <a href="javascript:void(0)" class="logout"><i class="iconfont icon-tuichu"></i> 退出</a>
             </div>
@@ -77,32 +79,9 @@
     ///admin/user/info
     // 发送ajax 获取用户的信息
     $(function(){
-    $.ajaxSetup({
-        // beforeSend: function (xhr) {
-        //     xhr.setRequestHeader("Authorization", localStorage.getItem("token"));
-        // },
-        error: function (xhr, status, error) {
-            if (xhr.status == 403) {
-                $(".modal-body>p").text("请重新登陆");
-                $('#myModal').modal();
-                $('#myModal').on('hidden.bs.modal', function (e) {
-                    window.location.href = "./login.html";
-                });
-            } else if (xhr.status == 404) {
-                $(".modal-body>p").text("您输入的网址有误");
-                $('#myModal').modal();
-                $('#myModal').on('hidden.bs.modal', function (e) {
-                    window.location.href = "./404.html";
-                });
-            } else {
-                $(".modal-body>p").text("400" + error);
-                $('#myModal').modal();
-            }
-        }
-    })
     $.ajax({
-        url: 'http://127.0.0.1:8080/api/v1/admin/user/info',
-        type: 'get',
+        url: bigNews.user_info,   
+        type:"get",
         dataType: 'json',
         success: function (backData) {
            $(".user_info>img").attr("src",backData.data.userPic);
@@ -131,6 +110,11 @@
        })
        $(".level02>li").click(function(){
            $(this).addClass("active").siblings().removeClass("active");
+       })
+       //点击右边个人中心 同时让左边点到第3个盒子
+       $(".userCenter").click(function(){
+           let index = $(".level01").length;
+         $(".level01").eq(index-1).addClass("active").siblings().removeClass("active");
        })
     })
 </script>

@@ -44,12 +44,147 @@
                     <tr>
                         <td colspan="3" class="text-center">
                             <a href="javascript:void(0)" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
-                                data-target="#myModal">新增分类</a>
+                                data-target="#Modal">新增分类</a>
                         </td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
+    <!--模态框-->
+    <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">友情提示</h4>
+                </div>
+                <div class="modal-body">
+                    <p>请输入名字和别称</p>
+                    <ul>
+                        <li><span>名字:</span> <input type="text" placeholder="爱火影" class="modalName"></li>
+                        <li><span>别称:</span><input type="text" placeholder="拿内多" class="modalSlug"></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+                </div>
+                <!--模板引擎渲染-->
+                <script id="trList" type="text/html">
+        {{each data v}}
+        <tr index = "{{v.id}}">
+            <td>{{v.name}}</td>
+            <td>{{v.slug}}</td>
+            <td class="text-center">
+                <a href="javascript:void(0);" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
+                <a href="javascript:void(0);" class="btn btn-danger btn-xs">删除</a>
+            </td>
+        {{/each}}
+    </script>
+                <script src="./libs/internter.js"></script>
+                <script>
+                    $(function () {
+                        $.ajax({
+                            url: bigNews.category_list,
+                            type: 'get',
+                            dataType: 'json',
+                            success: function (backData) {
+                                   console.log(backData);
+                                 window.parent.sessionStorage.setItem("id",JSON.stringify(backData.data));
+                                $(".category_table>tbody").html(template("trList", backData));
+                            }
+                        })
+                        //2.新增分类 给新增分类按钮添加点击事件 弹出模态框 
+                        $("#xinzengfenlei").click(function () {
+                            //点了就要强制加类 
+                            $("#myModal").modal();
+                            $('#myModal').on('hidden.bs.modal', function (e) {
+                                let modalName = $(".modalName").val();
+                                let modalSlug = $(".modalSlug").val();
+                                if (modalName.length == 0 || modalSlug.length == 0) {
+                                    $(".modal-body>p").text("名字或者别称不能为空");
+                                    $("#myModal").modal();
+                                    return
+                                } else {
+                                    //这里把ajax 放在else 里面保证当为空时不会放松请求
+                                    $.ajax({
+                                        url: bigNews.category_add,
+                                        type: 'post',
+                                        dataType: 'json',
+                                        data: {
+                                            name: modalName,
+                                            slug: modalSlug,
+                                        },
+                                        success: function (backData) {
+                                            console.log(backData);
+                                            if (backData.code == 201) {
+                                                alert("添加成功")
+                                                window.location.reload();
+                                            }
+                                        }
+                                    });
+                                    $(".modal-body>p").text("请输入名字和别称");
+                                }
+
+                            });
+
+                        })
+
+                    });
+                    //添加 删除和编辑功能
+                    $(function () {
+                        $("body").on("click", ".btn-danger", function () {
+                            let index = +$(this).parent().parent().attr("index");
+                            $.ajax({
+                                url: bigNews.category_delete,
+                                type: 'post',
+                                dataType: 'json',
+                                data: {
+                                    id: index,
+                                },
+                                success: function (backData) {
+                                    console.log(backData);
+                                    if (backData.code == 204) {
+                                        alert("删除成功");
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        })
+                        //编辑功能 由于都是 动态添加的 所以需要给按钮委托事件
+                        $("body").on("click", ".btn-info", function () {
+                            let index = +$(this).parent().parent().attr("index");
+                            $("#myModal").modal();
+                            $('#myModal').on('hidden.bs.modal', function (e) {
+                                let modalName = $(".modalName").val();
+                                let modalSlug = $(".modalSlug").val();
+                                if (modalName.length == 0 || modalSlug.length == 0) {
+                                    $(".modal-body>p").text("名字或者别称不能为空");
+                                    $("#myModal").modal();
+                                    return
+                                }else {
+                                    $.ajax({
+                                        url:bigNews.category_edit,
+                                        type:'post',
+                                        dataType:'json',
+                                        data:{
+                                            id: index,
+                                            name:modalName,
+                                            slug:modalSlug,
+                                        },
+                                        success: function(backData){
+                                              if(backData.code == 200 ){
+                                                  alert("修改成功");
+                                                  window.location.reload();
+                                              }
+                                        }
+                                    });
+                                }
+                            })
+                        })
+                    })
+
+                </script>
 
 </html>

@@ -15,6 +15,8 @@
   <script src="./libs/jquery-1.12.4.min.js"></script>
   <!-- 引入bootstrap的js文件 -->
   <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+  <!--网络层-->
+  <script src="./libs/internter.js"></script>
 </head>
 
 <body>
@@ -74,7 +76,7 @@
       }
       //(1).实例化ajax对象
       $.ajax({
-        url: 'http://127.0.0.1:8080/api/v1/admin/user/login',
+        url: bigNews.user_login,
         type: 'post',
         dataType: 'json',
         data: {
@@ -82,13 +84,11 @@
           password: passwordVal,
         },
         success: function (backData) {
-       
-
-          //判断 如果不是就弹出输入框
+          console.log(backData);
           if (backData.code == 200) {
             //跳转页面
             $(".modal-body>p").text("登录成功");
-             localStorage.setItem("token",backData.token);
+            localStorage.setItem("token", backData.token);
             $('#myModal').modal();
             $('#myModal').on('hidden.bs.modal', function (e) {
               window.location.href = "./index.html";
@@ -97,9 +97,7 @@
           }
           $(".modal-body>p").text(backData.msg);
           $('#myModal').modal();
-
         }
-
       });
     })
   })
