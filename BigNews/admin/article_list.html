@@ -13,8 +13,10 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <!--网络层-->
     <script src="./libs/internter.js"></script>
-</head>
+    <!--分页栏-->
+    <script src="./libs/jquery.twbsPagination.js"></script>
 
 <body>
     <div class="container-fluid">
@@ -56,52 +58,106 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
+
                 </tbody>
             </table>
             <div class="row text-center">
+                <ul id="pagination" class="pagination-sm"></ul>
             </div>
         </div>
     </div>
 </body>
+<script id="optionList" type="text/html">
+    <option value="">所有分类</option>
+    {{each data v}}
+     <option value= "{{v.id}}">{{v.name}}</option>                 
+    {{/each}}
+</script>
 <script id="artList" type="text/html">
-    <tr index = "{{data.id}}">
-        <td>{{data.title}}</td>
-        <td>{{data.author}}</td>
-        <td>{{data.content}}</td>
-        <td class="text-center">{{data.date}}</td>
-        <td class="text-center">{{data.state}}</td>
+    {{each data.data v}}
+    <tr>
+        <td>{{v.title}}</td>
+        <td>{{v.author}}</td>
+        <td class="text-center">{{v.date}}</td>
+        <td class="text-center">{{v.state}}</td>
         <td class="text-center">
             <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
-            <a href="javascript:void(0);" class="btn btn-danger btn-xs delete">删除</a>
+            <a href="javascript:void(0);" index="{{v.id}}" class="btn btn-danger btn-xs delete">删除</a>
         </td>
     </tr>
+    {{/each}}
 </script>
 <script>
-      let editArr = [];
-      let arr = window.parent.sessionStorage.getItem("id");
-     arr = JSON.parse(arr);
-     $(function(){
-        for(let i = 0;  i<arr.length; i++){
-         $.ajax({
-             url:bigNews.article_search,
-             type:'get',
-             dataType:'json',
-             data:{
-                  id:arr[i].id,
-             },
-             success: function(backData){
-                 editArr[editArr.length] = backData.data;
-                 $(".table>tbody").append(template("artList",backData));
+    //1.先获取文章类别  渲染option标签 
+    $(function () {
+        $.ajax({
+            url: bigNews.category_list,
+            type: 'get',
+            dataType: 'json',
+            success: function (backData) {
+                $("#selCategory").html(template("optionList", backData));
+            }
+        });
+        //2.  给筛选按钮 添加点击事件 注意 这个筛选按钮是form 表单要阻止默认跳转
+        //如何筛选文章??  一通过 id 和状态值 再发送一次ajax 同时渲染文章列表; 
+
+        $("#btnSearch").click(function (e) {
+            e.preventDefault();
+            //获得value值
+            let optionValue = $("#selCategory").val();
+            let selectValue = $("#selStatus").val();
+            $.ajax({
+                url: bigNews.article_query,
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    type: optionValue,
+                    state: selectValue,
+                    page: 1,
+                    perpage: 10,
+                },
+                success: function (backData) {
+                    $(".table>tbody").html(template("artList", backData));
+                    $('#pagination').twbsPagination("destroy");
+                    $('#pagination').twbsPagination({
+                        totalPages: backData.data.totalPage,
+                        visiblePages: 7,
+                        first: "首先",
+                        prev: "上一页",
+                        next: "下一页",
+                        last: "尾页",
+                        onPageClick: function (event, page) {
+                            $('#page-content').text('Page ' + page);
+                        }
+                    });
+                }
+            })
+        })
+        //  用户已进入页面 执行默认全部 渲染列表
+        $("#btnSearch").click();
+        //4. 给删除按钮添加点击事件 由于按钮是动态生成的  所以要委托添加事件
+        $("body").on("click", ".btn-danger", function () {
+            let index = +$(this).attr("index");
+            $.ajax({
+                url: bigNews.article_delete,
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    id: index,
+                },
+                success: function (backData) {
+                    if (backData.code == 204) {
+                        alert("删除成功")
+                        location.reload();
+                    }
                 }
             });
-            
-        }
-        window.parent.sessionStorage.setItem("data",JSON.stringify(editArr));
-       //委托事件 动态添加的要注册委托事件
-     })
-    
-     
+        })
+    })
+    // 添加分页栏功能 progation 插件 
+    $(function () {
+
+    })
 </script>
 
 </html>
