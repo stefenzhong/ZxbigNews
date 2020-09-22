@@ -68,6 +68,7 @@
                     </ul>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn " data-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
                 </div>
                 <!--模板引擎渲染-->
@@ -98,13 +99,13 @@
                         //2.新增分类 给新增分类按钮添加点击事件 弹出模态框 
                         $("#xinzengfenlei").click(function () {
                             //点了就要强制加类 
+                            $(".modal-body>p").text("请输入名字和别称");
                             $("#myModal").modal();
                             $('#myModal').on('hidden.bs.modal', function (e) {
                                 let modalName = $(".modalName").val();
                                 let modalSlug = $(".modalSlug").val();
                                 if (modalName.length == 0 || modalSlug.length == 0) {
                                     $(".modal-body>p").text("名字或者别称不能为空");
-                                    $("#myModal").modal();
                                     return
                                 } else {
                                     //这里把ajax 放在else 里面保证当为空时不会放松请求
@@ -154,14 +155,13 @@
                         })
                         //编辑功能 由于都是 动态添加的 所以需要给按钮委托事件
                         $("body").on("click", ".btn-info", function () {
+                            $(".modal-body>p").text("请输入名字和别称");
                             let index = +$(this).parent().parent().attr("index");
                             $("#myModal").modal();
                             $('#myModal').on('hidden.bs.modal', function (e) {
                                 let modalName = $(".modalName").val();
                                 let modalSlug = $(".modalSlug").val();
                                 if (modalName.length == 0 || modalSlug.length == 0) {
-                                    $(".modal-body>p").text("名字或者别称不能为空");
-                                    $("#myModal").modal();
                                     return
                                 }else {
                                     $.ajax({
@@ -181,6 +181,8 @@
                                         }
                                     });
                                 }
+                                $(".modalName").val("");
+                                $(".modalSlug").val("");
                             })
                         })
                     })
